@@ -47,8 +47,4 @@ Make sure the dataset files are correctly placed in the `/data` folder, and the 
 
 ## Deployment
 
-This project is deployed on [Streamlit Cloud](<streamlit-app-link>).
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is deployed on [Streamlit Cloud](<https://submission-fc7hhnaoacd6exd5h5tmdw.streamlit.app/>).
