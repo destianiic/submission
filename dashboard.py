@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Load the datasets using the full paths
+# Load datasets
 hour_df = pd.read_csv("hour.csv")
 day_df = pd.read_csv("day.csv")
 
@@ -16,57 +15,90 @@ st.title("Bike Rentals Analysis Dashboard")
 # Section for exploring the factors affecting bike rentals
 st.header("Factors Affecting Bike Rentals")
 
-# Visualization: Rentals by Season
+# Bar Chart: Rentals by Season
 st.subheader("Bike Rentals by Season")
-plt.figure(figsize=(10, 6))
-sns.boxplot(x='season', y='cnt', data=day_df)
+season_counts = day_df['season'].value_counts()
+season_labels = ['Winter', 'Spring', 'Summer', 'Fall']
+plt.figure(figsize=(8, 6))
+plt.bar(season_labels, season_counts)
 plt.title('Bike Rentals by Season')
+plt.xlabel('Season')
+plt.ylabel('Number of Rentals')
 st.pyplot(plt)
 
-# Visualization: Rentals on Holidays vs. Non-Holidays
-st.subheader("Rentals on Holidays vs. Non-Holidays")
-plt.figure(figsize=(10, 6))
-sns.boxplot(x='holiday', y='cnt', data=day_df)
-plt.title('Bike Rentals on Holidays vs. Non-Holidays')
-st.pyplot(plt)
-
-# Visualization: Rentals on Working Days vs. Non-Working Days
+# Pie Chart: Rentals on Working Days vs. Non-Working Days
 st.subheader("Rentals on Working Days vs. Non-Working Days")
-plt.figure(figsize=(10, 6))
-sns.boxplot(x='workingday', y='cnt', data=day_df)
-plt.title('Bike Rentals on Working Days vs. Non-Working Days')
+workingday_counts = day_df['workingday'].value_counts()
+workingday_labels = ['Non-Working Day', 'Working Day']
+plt.figure(figsize=(8, 6))
+plt.pie(workingday_counts, labels=workingday_labels, autopct='%1.1f%%', startangle=90)
+plt.title('Rentals on Working Days vs. Non-Working Days')
 st.pyplot(plt)
 
-# Section for exploring the impact of weather conditions
-st.header("Impact of Weather Conditions on Bike Rentals")
-
-# Visualization: Rentals vs. Temperature
-st.subheader("Bike Rentals vs. Temperature")
-plt.figure(figsize=(10, 6))
-sns.scatterplot(x='temp', y='cnt', data=day_df)
-plt.title('Bike Rentals vs. Temperature')
-st.pyplot(plt)
-
-# Visualization: Rentals vs. Humidity
+# Histogram: Rentals vs. Humidity
 st.subheader("Bike Rentals vs. Humidity")
 plt.figure(figsize=(10, 6))
-sns.scatterplot(x='hum', y='cnt', data=day_df)
+plt.hist(day_df['hum'], bins=20, color='g')
 plt.title('Bike Rentals vs. Humidity')
+plt.xlabel('Humidity')
+plt.ylabel('Frequency of Rentals')
 st.pyplot(plt)
 
-# Visualization: Rentals vs. Windspeed
-st.subheader("Bike Rentals vs. Windspeed")
+# Bar Chart: Rentals vs. Temperature
+st.subheader("Average Bike Rentals per Temperature Group")
+temp_bins = pd.cut(day_df['temp'], bins=10)  # Group temperatures into 10 bins
+temp_rentals = day_df.groupby(temp_bins)['cnt'].mean()  # Calculate average rentals per bin
 plt.figure(figsize=(10, 6))
-sns.scatterplot(x='windspeed', y='cnt', data=day_df)
-plt.title('Bike Rentals vs. Windspeed')
+temp_rentals.plot(kind='bar', color='b')
+plt.title('Average Bike Rentals per Temperature Group')
+plt.xlabel('Temperature (Binned)')
+plt.ylabel('Average Number of Rentals')
 st.pyplot(plt)
 
-# Visualization: Correlation Heatmap
-st.subheader("Correlation Between Weather Conditions and Rentals")
+# Advanced Analysis Section
+st.header("Advanced Analysis")
+
+# Geoanalysis based on season (season as a proxy for different regions)
+st.subheader("Total Bike Rentals by Season")
+season_rentals = day_df.groupby('season')['cnt'].sum()
 plt.figure(figsize=(10, 6))
-sns.heatmap(day_df[['temp', 'hum', 'windspeed', 'cnt']].corr(), annot=True, cmap='coolwarm')
-plt.title('Correlation Between Weather Conditions and Rentals')
+season_rentals.plot(kind='bar', color='c')
+plt.title('Total Bike Rentals by Season')
+plt.xlabel('Season')
+plt.ylabel('Total Rentals')
 st.pyplot(plt)
+
+# Manual grouping of bike rentals by season
+st.subheader('Average Bike Rentals per Season')
+season_groups = day_df.groupby('season')['cnt'].mean()
+plt.figure(figsize=(10, 6))
+season_groups.plot(kind='bar', color='m')
+plt.title('Average Bike Rentals per Season')
+plt.xlabel('Season')
+plt.ylabel('Average Rentals')
+st.pyplot(plt)
+
+# RFM Analysis Section
+st.header('RFM Analysis')
+
+# Add 'Recency' as days since last entry
+latest_date = day_df['dteday'].max()
+day_df['Recency'] = (latest_date - day_df['dteday']).dt.days
+
+# Calculate Frequency (total rentals per day of the week)
+rental_frequency = day_df.groupby('weekday')['cnt'].sum()
+
+# Monetary value: Total rentals per day
+monetary_value = day_df.groupby('dteday')['cnt'].sum()
+
+# Display RFM
+rfm_df = pd.DataFrame({
+    'Recency': day_df.groupby('dteday')['Recency'].mean(),
+    'Frequency': rental_frequency,
+    'Monetary': monetary_value
+})
+
+st.write(rfm_df.head())
 
 # Conclusions Section
 st.header("Conclusions")
