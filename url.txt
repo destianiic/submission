@@ -1,0 +1,2 @@
+Hour CSV Dataset: https://raw.githubusercontent.com/destianiic/dicoding_tugas_akhir/main/hour.csv
+Day CSV Dataset: https://raw.githubusercontent.com/destianiic/dicoding_tugas_akhir/main/day.csv
